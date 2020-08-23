@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:experimental
 # ベースイメージを選定する
 FROM ruby:2.5.1-slim-stretch as techpitgram-depends-all
 
@@ -11,9 +12,11 @@ RUN apt-get update -qq && \
     liblzma-dev \
     libxml2-dev \
     libpq-dev \
-    libcurl4-openssl-dev && \
-  apt-get -y clean && \
-  rm -rf /var/lib/apt/list/*
+    libcurl4-openssl-dev \
+    git \
+    ssh && \
+    apt-get clean && \
+    rm -r /var/lib/apt/lists/*
 
 # アプリケーションの実行ディレクトリを作成
 RUN mkdir /techpitgram
@@ -23,7 +26,11 @@ WORKDIR /techpitgram
 # Railsとして起動するための依存ライブラリをインストール
 COPY Gemfile /techpitgram/Gemfile
 COPY Gemfile.lock /techpitgram/Gemfile.lock
-RUN bundle install
+
+# GitHub へのアクセスをするために公開鍵情報を整備
+RUN git config --global url.ssh://git@github.com.insteadOf "https://github.com" && \
+  mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
+RUN --mount=type=ssh bundle install
 
 # アプリケーションをコピー
 COPY . /techpitgram
