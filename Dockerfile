@@ -43,19 +43,25 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y  --no-install-recommends \
   rm -rf /var/lib/apt/list/* && \
   rm -r /usr/local/bundle
 
+# root以外のユーザーに切り替えられるようにする
+RUN useradd -d /techpitgram -s /bin/bash techpitgram
+
 # ビルドした bundle をコピーする
 COPY --from=techpitgram-depends-all /usr/local/bundle /usr/local/bundle
 
 # ビルドした app をコピーする
-COPY --from=techpitgram-depends-all /techpitgram /techpitgram
+COPY --chown=techpitgram:techpitgram --from=techpitgram-depends-all /techpitgram /techpitgram
 
 # 実行時のディレクトリに指定
 WORKDIR /techpitgram
 
 # コンテナの起動時に実行したいスクリプト指定
-COPY tools/entrypoint.sh /usr/bin/
+COPY --chown=techpitgram:techpitgram tools/entrypoint.sh /usr/bin/
 RUN chmod +x /usr/bin/entrypoint.sh
 ENTRYPOINT ["entrypoint.sh"]
+
+# root以外のユーザーに切り替えられるようにする
+USER techpitgram
 
 # Railsを起動
 EXPOSE 3000
