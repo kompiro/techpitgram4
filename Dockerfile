@@ -23,20 +23,34 @@ WORKDIR /techpitgram
 # Railsとして起動するための依存ライブラリをインストール
 COPY Gemfile /techpitgram/Gemfile
 COPY Gemfile.lock /techpitgram/Gemfile.lock
-RUN bundle install
+RUN bundle install && \
+  curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
+  apt-get install -y nodejs
 
 # アプリケーションをコピー
 COPY . /techpitgram
 
-FROM techpitgram-depends-all as techpitgram-build-assets
-
 # assetのビルド
 RUN bundle exec rails assets:precompile
 
-FROM techpitgram-depends-all as techpitgram-app
+FROM ruby:2.5.1-slim-stretch as techpitgram-app
 
-# ビルドした asset をコピーする
-COPY --from=techpitgram-build-assets /techpitgram/public/assets /techpitgram/public
+RUN apt-get update -qq && \
+DEBIAN_FRONTEND=noninteractive apt-get install -y  --no-install-recommends \
+    imagemagick \
+    libxml2 \
+    libpq-dev && \
+  rm -rf /var/lib/apt/list/* && \
+  rm -r /usr/local/bundle
+
+# ビルドした bundle をコピーする
+COPY --from=techpitgram-depends-all /usr/local/bundle /usr/local/bundle
+
+# ビルドした app をコピーする
+COPY --from=techpitgram-depends-all /techpitgram /techpitgram
+
+# 実行時のディレクトリに指定
+WORKDIR /techpitgram
 
 # コンテナの起動時に実行したいスクリプト指定
 COPY tools/entrypoint.sh /usr/bin/
