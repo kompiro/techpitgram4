@@ -27,3 +27,9 @@ jobs:
         run: docker-compose -f docker-compose-dev.yml up -d
       - name: Run test
         run: bundle exec rake test:db
+      - name: Publish Test Report
+        if: ${{ always() }}
+        uses: mikepenz/action-junit-report@v1
+        with:
+          report_paths: 'test/reports/TEST-*.xml'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
