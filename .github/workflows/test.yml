@@ -1,0 +1,54 @@
+name: Run test
+
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+
+    services:
+      # サービスコンテナへのアクセスをするためのラベルを設定する
+      postgres:
+        # Docker Hub のイメージを指定する
+        image: postgres:11
+        # postgresのパスワードを指定する
+        env:
+          POSTGRES_PASSWORD: postgres
+        # postgres が起動するまでのヘルスチェックを入れる
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # host側にservice containerの5432ポートを公開する
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install packages
+        run: |-
+          sudo apt-get update -qq && \
+            DEBIAN_FRONTEND=noninteractive sudo apt-get install -y  --no-install-recommends \
+            imagemagick \
+            build-essential \
+            patch \
+            ruby-dev \
+            zlib1g-dev \
+            liblzma-dev \
+            libxml2-dev \
+            libpq-dev \
+            libcurl4-openssl-dev 
+      - uses: ruby/setup-ruby@v1.52.0
+        env:
+          BUNDLE_GITHUB__COM: ${{ secrets.PRIVATE_ACCESS_TOKEN }}
+        with:
+          ruby-version: 2.5.1
+          bundler-cache: true
+      - name: Run test
+        run: bundle exec rake test:db
+      - name: Publish Test Report
+        if: ${{ always() }}
+        uses: mikepenz/action-junit-report@v1
+        with:
+          report_paths: 'test/reports/TEST-*.xml'
+          github_token: ${{ github.token }}

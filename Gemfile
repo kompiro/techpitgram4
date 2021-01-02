@@ -12,6 +12,7 @@ gem 'uglifier', '>= 1.3.0'
 gem 'coffee-rails', '~> 4.2'
 gem 'turbolinks', '~> 5'
 gem 'jbuilder', '~> 2.5'
+gem 'mini_racer', '~> 0.3'
 
 gem 'devise'
 gem 'bootstrap', '~> 4.1.3'
@@ -32,7 +33,6 @@ group :development do
   gem 'listen', '>= 3.0.5', '< 3.2'
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
-  gem 'sqlite3', '~>1.3.6'
   gem 'bullet'
 end
 
@@ -42,3 +42,8 @@ group :production do
 end
 
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+gem 'private-gem-test', github: 'kompiro/private-gem-test'
+
+group :test do
+  gem 'minitest-reporters'
+end
