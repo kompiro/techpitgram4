@@ -14,4 +14,5 @@ jobs:
           rubocop_extensions: rubocop-minitest
           github_token: ${{ secrets.github_token }}
           fail_on_error: true
+          reporter: github-pr-review
 
