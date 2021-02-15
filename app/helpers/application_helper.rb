@@ -5,6 +5,3 @@ module ApplicationHelper
     "https://www.gravatar.com/avatar/#{gravatar_id}.jpg"
   end
 end
-
-class EmptyClass
-end
