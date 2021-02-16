@@ -1,6 +1,8 @@
 name: Run test
 
-on: [push]
+on: 
+  push:
+    branches-ignore: 4_github_actions_container_registry
 jobs:
   test:
     runs-on: ubuntu-18.04
